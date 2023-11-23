@@ -1,6 +1,8 @@
 package com.hehe.review.service;
 
 import com.hehe.review.api.request.CreateAndEditRestaurant;
+import com.hehe.review.api.response.RestaurantDetailView;
+import com.hehe.review.api.response.RestaurantView;
 import com.hehe.review.model.MenuEntity;
 import com.hehe.review.model.RestaurantEntity;
 import com.hehe.review.repository.MenuRepository;
@@ -13,6 +15,7 @@ import java.awt.*;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 @RequiredArgsConstructor
 @Service
@@ -76,5 +79,37 @@ public class RestaurantService {
 
         List<MenuEntity> menus = menuRepository.findAllByRestaurantId(restaurantId);
         menuRepository.deleteAll(menus);
+    }
+
+    public List<RestaurantView> getAllRestaurants() {
+        List<RestaurantEntity> restaurants = restaurantRepository.findAll();
+        return restaurants.stream().map((restaurant) -> RestaurantView.builder()
+                                                                        .id(restaurant.getId())
+                                                                        .name(restaurant.getName())
+                                                                        .address(restaurant.getAddress())
+                                                                        .createdAt(restaurant.getCreatedAt())
+                                                                        .updatedAt(restaurant.getUpdatedAt())
+                                                                        .build()).toList();
+    }
+
+    public RestaurantDetailView getRestaurant(Long restaurantId) {
+        RestaurantEntity restaurantEntity = restaurantRepository.findById(restaurantId).orElseThrow();
+        List<MenuEntity> menuEntityList = menuRepository.findAllByRestaurantId(restaurantId);
+        List<RestaurantDetailView.Menu> menus = menuEntityList.stream().map((menu) -> RestaurantDetailView.Menu.builder()
+                .id(menu.getRestaurantId())
+                .name(menu.getName())
+                .price(menu.getPrice())
+                .createdAt(menu.getCreatedAt())
+                .updatedAt(menu.getUpdatedAt())
+                .build()).toList();
+
+        return RestaurantDetailView.builder()
+                .id(restaurantEntity.getId())
+                .name(restaurantEntity.getName())
+                .address(restaurantEntity.getAddress())
+                .menus(menus)
+                .createdAt(restaurantEntity.getCreatedAt())
+                .updatedAt(restaurantEntity.getUpdatedAt())
+                .build();
     }
 }
