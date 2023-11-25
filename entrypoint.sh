@@ -1,3 +1,3 @@
 #!/bin/bash
 
-java -jar /app/review.jarD
+java -jar /app/review.jar
